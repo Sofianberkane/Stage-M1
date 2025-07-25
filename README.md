@@ -6,14 +6,16 @@ Ce projet Python permet de traiter, analyser et visualiser des données issues d
 
 ## 📁 Structure du projet
 
-├── gps_utils.py # Outils de géolocalisation (conversion, distance, parsing)
-├── rec_data_gps.py # Extraction des positions, vitesses, arrêts depuis les fichiers GPS
-├── rec_data_capt.py # Analyse des fichiers capteurs (microphones, accéléros)
-├── recuperer_fichiers.py # Association automatique des fichiers GPS/capteurs par date
-├── trier_parcours.py # Classification automatique des trajets bruts selon des parcours de référence
-├── trier_les_chemin.py # Découpage des trajets complets en segments par sens (aller/retour)
-├── tracer_tout_dans_un_dossier.py # Visualisation automatique des trajets sous forme de cartes HTML
-├── analyser_multi_jours.py # Pipeline d'analyse multi-jours de virages, lignes droites et anomalies
+.
+├── gps_utils.py                 # Outils de géolocalisation (conversion, distance, parsing)
+├── rec_data_gps.py             # Extraction des positions, vitesses, arrêts depuis les fichiers GPS
+├── rec_data_capt.py            # Analyse des fichiers capteurs (microphones, accéléros)
+├── recuperer_fichiers.py       # Association automatique des fichiers GPS/capteurs par date
+├── trier_parcours.py           # Classification des trajets bruts selon un parcours de référence
+├── trier_les_chemin.py         # Découpage des trajets en segments (aller / retour)
+├── tracer_tout_dans_un_dossier.py # Génération de cartes Folium pour chaque trajet
+├── analyser_multi_jours.py     # Analyse complète multi-jours (virages, lignes droites, anomalies)
+
 
 ## ⚙️ Fonctionnalités principales
 
