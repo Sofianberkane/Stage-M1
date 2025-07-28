@@ -491,6 +491,7 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
     ##############################################################################################################
     ################################### Avoir les info dans virages ##############################################
     ##############################################################################################################
+    
     # Convertir ta liste t_filtre en datetime
     reference_date = df_filtre['datetime'].dt.date.iloc[0]
     
@@ -507,8 +508,8 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
     else:
         nom = virages_ligne_6
     
-    # Dictionnaire pour accumuler les lignes par virage
-    # === Dictionnaire pour stocker les lignes de stats par virage
+    
+    # Dictionnaire pour stocker les lignes de stats par virage
     tableaux_virages = {}
     
     for nom_virage, (coord_start, coord_end) in nom.items():
@@ -727,6 +728,7 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
     
     ##############################################################################################################
     ########################################## Interpolation vitesse, gps ########################################
+    ##############################################################################################################
     mic_vars = [
         mic1_15_625, mic1_31_25, mic1_62_5, mic1_125, mic1_250, mic1_500,
         mic1_1000, mic1_2000, mic1_4000, mic1_8000, mic1_16000
