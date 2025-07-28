@@ -91,5 +91,5 @@ if __name__ == "__main__":
         input_folder=dossier_input,
         output_folder=dossier_output,
         sample_rate=30,          # un point sur 30
-        threshold_km=0.2        # 50 mètres
+        threshold_km=0.02        # 50 mètres
     )
