@@ -102,7 +102,9 @@ def analyse_multi(trajet, sens):
                     depassements_par_capteur[capteur_name].extend(evenements)
 
                 
-                
+                ###############################################################################################################
+                ###### trace une carte permettant de voir les moment où l'on est dans un virage, en ligne droite ou à l'arrêt #
+                ###############################################################################################################
                 
                 
                 # # ➔ Génération d'une carte pour ce fichier (si loc non vide)
@@ -124,17 +126,6 @@ def analyse_multi(trajet, sens):
                 #             popup="Arrêt"
                 #         ).add_to(m)
                     
-                #     # Tracer tous les arrêts en bleu
-                #     for lignes in val_crit:
-                #         coords = loc_filtre[lignes["idx_gps"]]
-                #         folium.CircleMarker(
-                #             location=coords,
-                #             radius=3,
-                #             color='black',
-                #             fill=True,
-                #             fill_opacity=0.7,
-                #             popup="Critique"
-                #         ).add_to(m)
                     
                 #     # Tracer tous les virages en orange
                 #     for virage, lignes in tableaux_virages.items():
@@ -163,6 +154,11 @@ def analyse_multi(trajet, sens):
                 #             popup="Ligne droite"
                 #         ).add_to(m)
                     
+                
+                
+                    ###########################################################################################
+                    ##### pour sauvegarder la carte (changer le path pour l'enregistrer autre part) ###########
+                    ###########################################################################################
                     
                     # Construire un nom de fichier clair à partir de la date du premier virage analysé
                     # if tableaux_virages:
@@ -193,7 +189,12 @@ def analyse_multi(trajet, sens):
     # Trouver un centre raisonnable (premier cluster trouvé)
     any_cluster = next((c for clusters in anomalies_recurrentes.values() for c in clusters), None)
     center = any_cluster["position"] if any_cluster else loc_interp[0]  # fallback Paris
-
+    
+    #######################################################################################################################
+    ###### trace une carte des points reconnu comme "anomalies" si ils sont plusieurs #####################################
+    ###### fois anormale avec la méthode de régression non linéaire du son en fonction de la vitesse#######################
+    #######################################################################################################################
+    
     # m = folium.Map(location=center, zoom_start=14)
 
     # # Couleurs simples pour les micros (tu peux adapter la palette)
@@ -224,6 +225,10 @@ def analyse_multi(trajet, sens):
 
 virages, ligne_droites, anomalies_recurrentes, depassement_capteur = analyse_multi("ligne_4", "sens_1")
 
+
+
+
+#########################################pour sauvegarder les données dans un fichier#######################
 # # Liste pour stocker les lignes
 # lignes = []
 

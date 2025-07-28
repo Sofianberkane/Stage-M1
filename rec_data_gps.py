@@ -16,6 +16,8 @@ def  recup_temps_pos(path):
     donnee=[]
     temps=[]
     
+    #### Lit chaque ligne et garde seulement celle qui ne sont pas vide ####
+    
     for i in range(0,len(contenu)-1):
     	ligne=contenu[i].split(' ')
     	if(ligne!=([('')])):
@@ -24,7 +26,7 @@ def  recup_temps_pos(path):
     		donnee.append(ligne[3])
     
     
-
+    #### Lit uniquement les ligne GNRMC et récup la vitesse avec convertion + loc
     spd_data=[]
     loc=[]
     date = []
@@ -42,7 +44,7 @@ def  recup_temps_pos(path):
                 loc.append(current_point)
         
     
-                               
+    #### Interpolation des moment à l'arrêt sinon bouge trop ####                           
     spd_mini = 0.5
     loc_corrected = []
     i = 0
@@ -84,6 +86,7 @@ def  recup_temps_pos(path):
     # m = folium.Map(location=(loc_corrected[0]), tiles="cartodb positron")
     # folium.PolyLine(loc_corrected,color='red',weight=2,opacity=0.8).add_to(m)
     
+    #### Récupère indices et temps des moments d'arrêt ####
     
     time_stop = []
     idx_stop = []

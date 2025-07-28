@@ -29,6 +29,10 @@ from recuperer_fichiers import charger_groupes_par_trajet_et_sens
 from gps_utils import haversine_km
 
 
+##################################################################################################################
+############ Paramètre test (changer name, le sens ou le chiffre dans groupe pour d'autre paramètres)#############
+##################################################################################################################
+
 # name = "ligne_2"
 
 # # Récupération des chemins vers les fichiers capteurs et GPS pour un trajet donné
@@ -42,10 +46,15 @@ from gps_utils import haversine_km
 
 # # Extraction des données de position, vitesse et arrêts à partir du fichier GPS
 # t, t_arret, idx_arret, loc, spd = recup_temps_pos(gps_path)
-
+##################################################################################################################
 
 
 def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
+    
+    ##############################################################################################################
+    ######### Récuperation des données + interpolation quand Nan #################################################
+    ##############################################################################################################
+    
     # Lecture du fichier
     df = pd.read_csv(
         path,
@@ -84,7 +93,9 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
     df.bfill(inplace=True)
     
     
-    
+    ##############################################################################################################
+    ####### Filtrage temporel pour avoir les données gps sur le même interval de temps que les capteur ###########
+    ##############################################################################################################
     
     # Conversion de t en datetime.time
     t_times = [datetime.strptime(h, "%H:%M:%S.%f").time() for h in t]
@@ -134,37 +145,13 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
             t_arret_filtre.append(h_str)
             
             
-    # donnees_filtrees = OrderedDict()
-    # donnees_filtrees["date"] = t_filtre
-    # donnees_filtrees["localisation gps"] = loc_filtre
-    # donnees_filtrees["vitesse"] = spd_filtre
-    # donnees_filtrees["moment en arret"] = t_arret_filtre
-    
-    # with open("C:/Users/sofian.berkane/Downloads/Soso/data_test/IA/tableau_gps.json", "w", encoding="utf-8") as f:
-    #     json.dump(donnees_filtrees, f, ensure_ascii=False, indent=4)
         
     
     df_filtre['Time_seconds'] = (df_filtre[col_time] - df_filtre[col_time].iloc[0]).dt.total_seconds()
     
-    # colonnes_a_supprimer = df_filtre.columns[12:23]
-    # df_filtre_reduit = df_filtre.drop(columns=colonnes_a_supprimer)
-    
-    # import math
-
-    # # Nombre total de lignes
-    # nb_total = len(df_filtre_reduit)
-    
-    # # Indice de séparation
-    # milieu = math.ceil(nb_total / 2)  # arrondi vers le haut si impair
-    
-    # # Découpe du DataFrame
-    # df_part1 = df_filtre_reduit.iloc[:milieu].reset_index(drop=True)
-    # df_part2 = df_filtre_reduit.iloc[milieu:].reset_index(drop=True)
-    
-    # # Sauvegarde des deux moitiés
-    # df_part1.to_csv("C:/Users/sofian.berkane/Downloads/Soso/data_test/IA/info_capteur_part1.csv", index=False)
-    # df_part2.to_csv("C:/Users/sofian.berkane/Downloads/Soso/data_test/IA/info_capteur_part2.csv", index=False)
-
+    ##############################################################################################################
+    ###### Déduction des données de capteur appartenant au moments d'arrêts ######################################
+    ##############################################################################################################
     
     t_arret_filtre = pd.to_datetime(t_arret_filtre, format='%H:%M:%S.%f').time
     df_filtre_time = df_filtre.s.dt.time
@@ -197,13 +184,17 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
         mask = (df_time_dt > start) & (df_time_dt < end)
         idxs = df_time_dt[mask].index.tolist()
         idx_stop.extend(idxs)
-        
-    
-        
     
     
     if len(t_arret_filtre) == 0:
         raise ValueError("Aucun arrêt détecté dans t_arret_filtre, impossible de corriger l’offset.")
+    
+    
+    
+    
+    ##############################################################################################################
+    ###### Enlève l'offset des accéléro ##########################################################################
+    ##############################################################################################################
     
     
     # Convertir t_arret_filtre (moments d’arrêt) en datetime sur la même date que df_filtre
@@ -232,7 +223,8 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
             print(f"⚠️ Colonne {col} absente dans df_filtre, correction ignorée.")
     
     
-        
+    ##############################################################################################################
+    ####################### Définition des variable contenant les données des capteur ############################
     ###  CAPTEUR 1  ####
 
     capt1_x = df_filtre["Unnamed: 23"]
@@ -277,7 +269,7 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
     capt3_z = capt3_z - capt3_z.iloc[idx_stop[0]]
     capt3_z_arr = capt3_z.iloc[idx_stop]- capt3_z.iloc[idx_stop[0]]
     
-    ###  MICROPHONE 1  ###
+    ###  MICROPHONE 2  ###
     
     mic1_15_625  = df_filtre["dB(A)"]
     mic1_31_25   = df_filtre["dB(A).1"]
@@ -292,7 +284,7 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
     mic1_16000   = df_filtre["dB(A).10"]
     
     
-    ###  MICROPHONE 2  ###
+    ###  MICROPHONE 1  ###
     
     # mic2_15_625  = df_filtre["dB(A).11"]
     # mic2_31_25   = df_filtre["dB(A).12"]
@@ -306,6 +298,10 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
     # mic2_8000    = df_filtre["dB(A).20"]
     # mic2_16000   = df_filtre["dB(A).21"]
     
+    
+    ##############################################################################################################
+    ####################### Définition des virage manuel (localisation début, fin) ###############################
+    ##############################################################################################################
     
     virages_ligne_4 = {
         'Chaufferie_de_la_Doua': [(45.7820, 4.8757), (45.7818, 4.8751)],
@@ -492,8 +488,9 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
         'Parc_relais_TCL_Déclines_grand_large': [(45.7746, 4.9763), (45.7742, 4.9777)]}
     
     
-    
-    ############################ Avoir info virages ########################################
+    ##############################################################################################################
+    ################################### Avoir les info dans virages ##############################################
+    ##############################################################################################################
     # Convertir ta liste t_filtre en datetime
     reference_date = df_filtre['datetime'].dt.date.iloc[0]
     
@@ -633,8 +630,12 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
             tableaux_virages[nom_virage] = []
         tableaux_virages[nom_virage].append(ligne)
         
+        
+        
+    ##############################################################################################################
+    ####################################### Avoir les info en ligne droite #######################################
+    ##############################################################################################################
     
-    ####################################### Avoir info ligne droite ##################################
     intervals_virages = []
     for lignes in tableaux_virages.values():
         for ligne in lignes:
@@ -723,7 +724,9 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
             **mic_stats
         })
         
-    ##################################### Interpolation #####################################
+    
+    ##############################################################################################################
+    ########################################## Interpolation vitesse, gps ########################################
     mic_vars = [
         mic1_15_625, mic1_31_25, mic1_62_5, mic1_125, mic1_250, mic1_500,
         mic1_1000, mic1_2000, mic1_4000, mic1_8000, mic1_16000
@@ -781,7 +784,14 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
     
     loc_interp = list(zip(lon_interp, lat_interp))
     
-    #############################################################################
+    
+    
+    
+    ##############################################################################################################
+    ################## calcul de la matrice de corrélation entre la vitesse et tout les capteurs #################
+    ################## + calcul d'anomalies si valeur de son 3 fois supérieurs à l'écart type ####################
+    ##################################### + calcul de la régression non linéaire #################################
+    ##############################################################################################################
     
     mic_name = ["dB(A).7","dB(A).8"]
         
@@ -801,6 +811,8 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
         '16000 Hz': mic1_16000
     })
     
+    #### Matrice de corélation ####
+    
     # corr_matrix = df.corr()
     # plt.figure(figsize=(14, 12))  # Taille adaptée
     # sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap='coolwarm', square=True,
@@ -811,6 +823,7 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
     # plt.show()
     
     
+    #### Régression + anomalies ####
     
     # for mic in mic_name:
     #     serie = df_filtre[mic]
@@ -879,7 +892,11 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
         
         
         
-    ############################# Avoir anomalies accéléro #################################
+        
+    ##############################################################################################################    
+    ############ Trouver des positions anormales à cause d'un dépassement en accél selon x et z ##################
+    ##############################################################################################################
+    
     # Regrouper les séries dans un dictionnaire
     series_dict = {
         "capt1_x": capt1_x,
