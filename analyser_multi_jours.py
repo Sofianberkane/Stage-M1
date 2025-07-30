@@ -32,13 +32,15 @@ def analyse_multi(trajet, sens):
     
     # Boucle sur chaque groupe (GPS + capteurs) trouvé
     for gps_path, capteurs_list in groupes:
+        i = 0
         print(f"\n=== Analyse pour GPS: {gps_path.name} ===")
         for capteur in capteurs_list:
+            i += 1
             print(f"  → Capteur : {capteur.name}")
             try:
                 # Appel de ta fonction principale d'analyse
                 t, t_arret, idx_arret, loc, spd = recup_temps_pos(gps_path)
-                tableaux_virages, stats_lignes_droites, loc_filtre, loc_interp, anomalies_son, anomalies_accel = analyse_capt(capteur, t, t_arret, idx_arret, 
+                tableaux_virages, stats_lignes_droites, loc_filtre, loc_interp, anomalies_son, anomalies_accel = analyse_capt(capteur, i, t, t_arret, idx_arret, 
                                                                                                                               trajet, loc, spd)
                 
                 if tableaux_virages:

@@ -33,14 +33,14 @@ from gps_utils import haversine_km
 ############ Paramètre test (changer name, le sens ou le chiffre dans groupe pour d'autre paramètres)#############
 ##################################################################################################################
 
-# name = "ligne_2"
+# name = "ligne_4"
 
 # # Récupération des chemins vers les fichiers capteurs et GPS pour un trajet donné
 # groupes = charger_groupes_par_trajet_et_sens(name, "sens_1")
 
 # print(groupes)
 
-# gps_path, capteurs_list = groupes[1]
+# gps_path, capteurs_list = groupes[3]
 
 # # print(groupes[3])
 
@@ -49,7 +49,7 @@ from gps_utils import haversine_km
 ##################################################################################################################
 
 
-def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
+def analyse_capt(path, number, t, t_arret, idx_arret, nom_traj, loc, spd):
     
     ##############################################################################################################
     ######### Récuperation des données + interpolation quand Nan #################################################
@@ -795,7 +795,7 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
     ##################################### + calcul de la régression non linéaire #################################
     ##############################################################################################################
     
-    mic_name = ["dB(A).7","dB(A).8"]
+    mic_name = ["dB(A).5","dB(A).6","dB(A).7","dB(A).8"]
         
     
     df = pd.DataFrame({
@@ -827,70 +827,74 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
     
     #### Régression + anomalies ####
     
-    # for mic in mic_name:
-    #     serie = df_filtre[mic]
-    #     coeffs = np.polyfit(np.log10(spd_interp), serie, deg=1)  # polynôme de degré 2
-    #     a,b=coeffs
+    anomalies_son = {}
+    
+    for mic in mic_name:
+        serie = df_filtre[mic]
+        coeffs = np.polyfit(np.log10(spd_interp), serie, deg=1)  # polynôme de degré 2
+        a,b=coeffs
         
-    #     def log10_mdel(x):
-    #         return a*np.log10(x)+b
+        def log10_mdel(x):
+            return a*np.log10(x)+b
     
         
-    #     # Valeurs prédites par la tendance
-    #     predicted = log10_mdel(spd_interp)
+        # Valeurs prédites par la tendance
+        predicted = log10_mdel(spd_interp)
         
-    #     residuals = serie - predicted
+        residuals = serie - predicted
         
-    #     mean_res = np.mean(residuals)
-    #     std_res = np.std(residuals)
-    #     threshold = mean_res + 2 * std_res
+        mean_res = np.mean(residuals)
+        std_res = np.std(residuals)
+        threshold = mean_res + 2 * std_res
         
-    #     anomalies = residuals > threshold
+        anomalie = residuals > threshold
+        anomalies_son[mic] = np.where(anomalie)[0].tolist()
         
-    #     idx_sorted = np.argsort(spd_interp)   
-    #     spd_sorted = spd_interp[idx_sorted]     
-    #     mic_sorted =predicted[idx_sorted]
-        
-    #     plt.figure(figsize=(8,6))
-    #     plt.scatter(spd_interp, serie, s=2, label="Mesures")
-        
-    #     plt.plot(spd_sorted, mic_sorted, color="orange", label="Tendance")
-        
-    #     plt.scatter(spd_interp[anomalies], serie.values[anomalies], facecolors='none', edgecolors='r', s=50, label="Anomalies")
-    #     plt.xlabel("Vitesse")
-    #     plt.ylabel("Niveau sonore (dB(A))")
-    #     plt.legend()
-    #     plt.title(f"Détection d'anomalies par écart à la tendance - {mic} ")
-    #     plt.grid()
-    #     plt.show()
+        idx_sorted = np.argsort(spd_interp)
+        spd_sorted = spd_interp[idx_sorted]     
+        mic_sorted = predicted[idx_sorted]
         
         
-    #     plt.figure()
-    #     plt.scatter(
-    #         lon_interp[~anomalies], 
-    #         lat_interp[~anomalies], 
-    #         c=df_filtre[mic][~anomalies], 
-    #         cmap='viridis', 
-    #         s=10,
-    #         label="Normal"
-    #     )
+        # plt.figure(figsize=(8,6))
+        # plt.scatter(spd_interp, serie, s=2, label="Mesures")
         
-    #     # Scatter anomalies (en rouge)
-    #     plt.scatter(
-    #         lon_interp[anomalies], 
-    #         lat_interp[anomalies], 
-    #         color='red', 
-    #         s=20, 
-    #         label="Anomalies"
-    #     )
+        # plt.plot(spd_sorted, mic_sorted, color="orange", label="Tendance")
         
-    #     plt.xlabel('Longitude')
-    #     plt.ylabel('Latitude')
-    #     plt.title(f'Intensité sonore et anomalies - {mic}')
-    #     plt.grid()
-    #     plt.axis('equal')
-    #     plt.legend()
-    #     plt.show()
+        # plt.scatter(spd_interp[anomalies], serie.values[anomalies], facecolors='none', edgecolors='r', s=50, label="Anomalies")
+        # plt.xlabel("Vitesse")
+        # plt.ylabel("Niveau sonore (dB(A))")
+        # plt.legend()
+        # plt.title(f"Détection d'anomalies par écart à la tendance - {mic} ")
+        # plt.grid()
+        # plt.show()
+        
+        
+        # plt.figure()
+        # plt.scatter(
+        #     lon_interp[~anomalies], 
+        #     lat_interp[~anomalies], 
+        #     c=df_filtre[mic][~anomalies], 
+        #     cmap='viridis', 
+        #     s=10,
+        #     label="Normal"
+        # )
+        
+        # # Scatter anomalies (en rouge)
+        # plt.scatter(
+        #     lon_interp[anomalies], 
+        #     lat_interp[anomalies], 
+        #     color='red', 
+        #     s=20, 
+        #     label="Anomalies"
+        # )
+        
+        # plt.xlabel('Longitude')
+        # plt.ylabel('Latitude')
+        # plt.title(f'Intensité sonore et anomalies - {mic}')
+        # plt.grid()
+        # plt.axis('equal')
+        # plt.legend()
+        # plt.show()
         
         
         
@@ -931,27 +935,28 @@ def analyse_capt(path, t, t_arret, idx_arret, nom_traj, loc, spd):
                 ]
                 break
     
-    # m = folium.Map(location=loc_interp[0], zoom_start=14)
-    # folium.PolyLine(loc_interp, color='blue', weight=4).add_to(m)
-    # # Ajout des cercles
-    # for capteur, liste_depassements in depassements.items():
-    #     for dep in liste_depassements:
-    #         index = dep["index"]
-    #         valeur = dep["value"]
-    #         vitesse = dep["vitesse"]
-    #         folium.Circle(
-    #             location=loc_interp[index],
-    #             radius=5,
-    #             color='red',
-    #             fill=True,
-    #             fill_opacity=0.6,
-    #             popup=f"Vitesse: {vitesse} \n Accèl: {valeur}"
-    #         ).add_to(m)
+    m = folium.Map(location=loc_interp[0], zoom_start=14)
+    folium.PolyLine(loc_interp, color='blue', weight=4).add_to(m)
+    # Ajout des cercles
+    for capteur, liste_depassements in depassements.items():
+        for dep in liste_depassements:
+            index = dep["index"]
+            valeur = dep["value"]
+            vitesse = dep["vitesse"]
+            folium.Circle(
+                location=loc_interp[index],
+                radius=5,
+                color='red',
+                fill=True,
+                fill_opacity=0.6,
+                popup=f"Vitesse: {vitesse} \n Accèl: {valeur}"
+            ).add_to(m)
             
-    # # Sauvegarde et ouverture
-    # m.save("C:/Users/sofian.berkane/Downloads/carte_anomalies_accel.html")
+    # Sauvegarde et ouverture
+    m.save(f"C:/Users/sofian.berkane/Downloads/Soso/anomalies_accel/carte_anomalies_accel_n°{number}({stats_lignes_droites[0]['date']}).html")
     
-    return tableaux_virages, stats_lignes_droites, loc_filtre, loc_interp, depassements
+    
+    return tableaux_virages, stats_lignes_droites, loc_filtre, loc_interp, anomalies_son, depassements
 
 
 
