@@ -33,19 +33,19 @@ from gps_utils import haversine_km
 ############ Paramètre test (changer name, le sens ou le chiffre dans groupe pour d'autre paramètres)#############
 ##################################################################################################################
 
-# name = "ligne_4"
+name = "ligne_4"
 
-# # Récupération des chemins vers les fichiers capteurs et GPS pour un trajet donné
-# groupes = charger_groupes_par_trajet_et_sens(name, "sens_1")
+# Récupération des chemins vers les fichiers capteurs et GPS pour un trajet donné
+groupes = charger_groupes_par_trajet_et_sens(name, "sens_1")
 
-# print(groupes)
+print(groupes)
 
-# gps_path, capteurs_list = groupes[3]
+gps_path, capteurs_list = groupes[3]
 
-# # print(groupes[3])
+# print(groupes[3])
 
-# # Extraction des données de position, vitesse et arrêts à partir du fichier GPS
-# t, t_arret, idx_arret, loc, spd = recup_temps_pos(gps_path)
+# Extraction des données de position, vitesse et arrêts à partir du fichier GPS
+t, t_arret, idx_arret, loc, spd = recup_temps_pos(gps_path)
 ##################################################################################################################
 
 
@@ -848,11 +848,21 @@ def analyse_capt(path, number, t, t_arret, idx_arret, nom_traj, loc, spd):
         threshold = mean_res + 2 * std_res
         
         anomalie = residuals > threshold
-        anomalies_son[mic] = np.where(anomalie)[0].tolist()
+        indices = np.where(anomalie)[0]
+
+        # Création de la liste enrichie avec valeur sonore et vitesse
+        anomalies_son[mic] = [
+            {
+                "index": int(idx),
+                "valeur_dB": float(df_filtre[mic].iloc[idx]),
+                "vitesse": float(spd_interp[idx])
+            }
+            for idx in indices
+        ]
         
-        idx_sorted = np.argsort(spd_interp)
-        spd_sorted = spd_interp[idx_sorted]     
-        mic_sorted = predicted[idx_sorted]
+        # idx_sorted = np.argsort(spd_interp)
+        # spd_sorted = spd_interp[idx_sorted]     
+        # mic_sorted = predicted[idx_sorted]
         
         
         # plt.figure(figsize=(8,6))
@@ -935,25 +945,32 @@ def analyse_capt(path, number, t, t_arret, idx_arret, nom_traj, loc, spd):
                 ]
                 break
     
-    m = folium.Map(location=loc_interp[0], zoom_start=14)
-    folium.PolyLine(loc_interp, color='blue', weight=4).add_to(m)
-    # Ajout des cercles
-    for capteur, liste_depassements in depassements.items():
-        for dep in liste_depassements:
-            index = dep["index"]
-            valeur = dep["value"]
-            vitesse = dep["vitesse"]
-            folium.Circle(
-                location=loc_interp[index],
-                radius=5,
-                color='red',
-                fill=True,
-                fill_opacity=0.6,
-                popup=f"Vitesse: {vitesse} \n Accèl: {valeur}"
-            ).add_to(m)
+    
+    #### Pour tracer les cartes des anomalies provenant des accéléro ( ####
+    
+    # m = folium.Map(location=loc_interp[0], zoom_start=14)
+    # folium.PolyLine(loc_interp, color='blue', weight=4).add_to(m)
+    # # Ajout des cercles
+    # for capteur, liste_depassements in depassements.items():
+    #     for dep in liste_depassements:
+            # index = dep["index"]
+            # valeur = dep["value"]
+    #         vitesse = dep["vitesse"]
+    
+              # if index >= len(loc_interp):
+              #     continue
+          
+    #         folium.Circle(
+    #             location=loc_interp[index],
+    #             radius=5,
+    #             color='red',
+    #             fill=True,
+    #             fill_opacity=0.6,
+    #             popup=f"Name: {capteur} \n Vitesse: {vitesse} \n Accèl: {valeur}"
+    #         ).add_to(m)
             
-    # Sauvegarde et ouverture
-    m.save(f"C:/Users/sofian.berkane/Downloads/Soso/anomalies_accel/carte_anomalies_accel_n°{number}({stats_lignes_droites[0]['date']}).html")
+    # # Sauvegarde et ouverture
+    # m.save(f"C:/Users/sofian.berkane/Downloads/Soso/anomalies/accel/carte_anomalies_accel_n°{number}({stats_lignes_droites[0]['date']}).html")
     
     
     return tableaux_virages, stats_lignes_droites, loc_filtre, loc_interp, anomalies_son, depassements
@@ -961,5 +978,5 @@ def analyse_capt(path, number, t, t_arret, idx_arret, nom_traj, loc, spd):
 
 
 
-# tableau = analyse_capt(capteurs_list[0], t, t_arret, idx_arret ,name, loc, spd)
+tableau = analyse_capt(capteurs_list[0], 0, t, t_arret, idx_arret ,name, loc, spd)
 
